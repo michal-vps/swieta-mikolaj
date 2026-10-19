@@ -9,30 +9,47 @@
   <style>
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background: radial-gradient(circle at top, #1e3a5f 0%, #0f172a 50%, #090d16 100%);
+      background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.92)), 
+                  url('zdjecie1.jpg') no-repeat center center fixed;
+      background-size: cover;
       min-height: 100vh;
       color: #f8fafc;
       overflow-x: hidden;
       margin: 0;
     }
+    /* Tło z drugą fotką jako nastrojowy element */
+    .bg-photo-overlay {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: url('zdjecie2.jpg') no-repeat center center;
+      background-size: cover;
+      border: 3px solid rgba(255, 215, 0, 0.6);
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      z-index: 2;
+      opacity: 0.85;
+    }
     .christmas-font {
       font-family: 'Mountains of Christmas', cursive;
     }
     .glass {
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
     }
     .glass-card {
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       transition: all 0.3s ease;
     }
     .glass-card:hover {
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.15);
       transform: translateY(-2px);
     }
     #snow-canvas {
@@ -49,11 +66,13 @@
       z-index: 10;
     }
     @keyframes pulse-glow {
-      0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
-      50% { box-shadow: 0 0 40px rgba(239, 68, 68, 0.9); }
+      0%, 100% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.7); text-shadow: 0 0 10px rgba(251, 191, 36, 0.6); }
+      50% { box-shadow: 0 0 50px rgba(239, 68, 68, 1); text-shadow: 0 0 20px rgba(251, 191, 36, 1); }
     }
-    .btn-glow {
+    .antyszwagier-badge {
       animation: pulse-glow 2s infinite;
+      background: linear-gradient(135deg, rgba(220, 38, 38, 0.3), rgba(251, 191, 36, 0.3));
+      border: 2px solid rgba(251, 191, 36, 0.8);
     }
   </style>
 </head>
@@ -61,15 +80,20 @@
 
   <!-- Padający śnieg -->
   <canvas id="snow-canvas"></canvas>
+  <!-- Druga fotka w rogu tła -->
+  <div class="bg-photo-overlay hidden sm:block" title="Magiczne chwile na śniegu!"></div>
 
   <div class="app-container w-full max-w-4xl">
     <!-- Górny pasek nawigacji -->
     <div class="flex flex-wrap items-center justify-between gap-3 mb-6 glass px-6 py-4 rounded-2xl">
       <div class="flex items-center gap-3">
-        <span class="text-4xl">🎅</span>
+        <span class="text-4xl animate-pulse">🕯️🎅</span>
         <div>
           <h1 class="christmas-font text-2xl md:text-3xl text-red-400 tracking-wide">Maszyna Losująca Mikołaja</h1>
-          <p class="text-xs text-slate-300">Gwarancja 100% losowości • System Anty-Szwagier v2.7</p>
+          <!-- POWIĘKSZONY I UWYPUKLONY TEKST ANTY SZWAGIER -->
+          <div class="mt-1 inline-block px-3 py-1 rounded-xl antyszwagier-badge text-amber-300 font-extrabold text-sm tracking-wider uppercase">
+            🛡️ System „Anty-Szwagier” Aktywny (Brak Ustawięń!)
+          </div>
         </div>
       </div>
 
@@ -77,11 +101,8 @@
         <button id="music-btn" onclick="toggleMusic()" class="glass-card px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 hover:bg-white/20 cursor-pointer">
           <span id="music-icon">🔇</span> <span id="music-text">Muzyka: WYŁ</span>
         </button>
-        <button onclick="openAuditModal()" class="glass-card px-3 py-2 rounded-xl text-xs font-semibold text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20 cursor-pointer">
-          🛡️ Audyt (1000x)
-        </button>
-        <button onclick="downloadSelfAsHtml()" class="glass-card px-3 py-2 rounded-xl text-xs font-semibold text-amber-300 border-amber-500/30 hover:bg-amber-500/20 cursor-pointer" title="Pobiera gotowy plik index.html na dysk">
-          💾 Pobierz index.html
+        <button onclick="downloadSelfAsHtml()" class="glass-card px-3 py-2 rounded-xl text-xs font-semibold text-amber-300 border-amber-500/30 hover:bg-amber-500/20 cursor-pointer">
+          💾 Pobierz plik
         </button>
       </div>
     </div>
@@ -89,36 +110,39 @@
     <!-- EKRAN 1: MASTER LOCK (Konfiguracja i Blokada) -->
     <div id="screen-lock" class="glass rounded-3xl p-6 md:p-10 text-center">
       <div class="inline-block p-4 rounded-full bg-red-500/20 border border-red-400/30 text-5xl mb-4">
-        🔒
+        🎄🕯️
       </div>
       <h2 class="christmas-font text-4xl md:text-5xl text-amber-300 mb-3">Czekamy na wszystkich przy stole!</h2>
-      <p class="text-slate-300 max-w-xl mx-auto mb-8">
-        Zanim odblokujemy worek z prezentami, upewnijcie się, że wszyscy uczestnicy patrzą na ekran. Algorytm wyklucza wylosowanie samego siebie oraz swojego partnera z pary.
+      <p class="text-slate-200 max-w-xl mx-auto mb-6 text-sm md:text-base">
+        Świeczki palą się, śnieg prószy, a Kevin właśnie zastawia pułapki na domokrążców. Zanim odblokujemy worek, upewnijcie się, że nikt nie podgląda!
       </p>
+
+      <!-- Motyw Kevina -->
+      <div class="mb-8 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs italic max-w-md mx-auto">
+        🎬 <i>„Keep the change, ya filthy animal!”</i> – Kevin Sam w Domu zatwierdza tegoroczne zasady losowania.
+      </div>
 
       <!-- Konfiguracja przed startem -->
       <div class="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto mb-8 text-left">
-        <!-- Wybór danych: Testowe A-H vs Prawdziwe Imiona -->
         <div class="glass-card p-4 rounded-2xl">
-          <label class="text-xs uppercase tracking-wider text-slate-400 font-bold block mb-2">1. Tryb Uczestników</label>
+          <label class="text-xs uppercase tracking-wider text-slate-300 font-bold block mb-2">1. Tryb Uczestników</label>
           <div class="flex gap-2">
             <button id="mode-letters" onclick="setNameMode('letters')" class="flex-1 py-2 px-3 rounded-xl text-sm font-bold bg-red-600 text-white transition cursor-pointer">
               🧪 Test (Litery A–H)
             </button>
-            <button id="mode-names" onclick="setNameMode('names')" class="flex-1 py-2 px-3 rounded-xl text-sm font-bold bg-white/10 text-slate-300 transition cursor-pointer">
+            <button id="mode-names" onclick="setNameMode('names')" class="flex-1 py-2 px-3 rounded-xl text-sm font-bold bg-white/10 text-slate-200 transition cursor-pointer">
               🎄 Finał (Imiona)
             </button>
           </div>
         </div>
 
-        <!-- Wybór jawności: Tajny vs Jawny -->
         <div class="glass-card p-4 rounded-2xl">
-          <label class="text-xs uppercase tracking-wider text-slate-400 font-bold block mb-2">2. Sposób ogłoszenia wyników</label>
+          <label class="text-xs uppercase tracking-wider text-slate-300 font-bold block mb-2">2. Sposób ogłoszenia wyników</label>
           <div class="flex gap-2">
             <button id="privacy-secret" onclick="setPrivacyMode('secret')" class="flex-1 py-2 px-3 rounded-xl text-sm font-bold bg-emerald-600 text-white transition cursor-pointer">
               🕵️ Tajny (5 sek.)
             </button>
-            <button id="privacy-public" onclick="setPrivacyMode('public')" class="flex-1 py-2 px-3 rounded-xl text-sm font-bold bg-white/10 text-slate-300 transition cursor-pointer">
+            <button id="privacy-public" onclick="setPrivacyMode('public')" class="flex-1 py-2 px-3 rounded-xl text-sm font-bold bg-white/10 text-slate-200 transition cursor-pointer">
               📢 Jawny dla wszystkich
             </button>
           </div>
@@ -127,32 +151,32 @@
 
       <!-- Podgląd Par -->
       <div class="max-w-2xl mx-auto mb-8">
-        <p class="text-xs uppercase tracking-wider text-slate-400 font-bold mb-3">Zarejestrowane Pary (Blokada losowania wewnątrz pary):</p>
+        <p class="text-xs uppercase tracking-wider text-slate-300 font-bold mb-3">Zarejestrowane Pary (Brak losowania wewnątrz pary):</p>
         <div id="pairs-preview" class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm"></div>
       </div>
 
-      <!-- Wspólne Hasło Rodzinne (Dowód braku ustawki) -->
+      <!-- Wspólne Hasło Rodzinne -->
       <div class="max-w-md mx-auto mb-8 glass-card p-4 rounded-2xl">
         <label class="text-xs uppercase tracking-wider text-amber-300 font-bold block mb-1">
           🎲 Wspólne Hasło Losujące (Anty-Ustawka)
         </label>
         <p class="text-xs text-slate-300 mb-3">
-          Niech każdy z sali rzuci jedno losowe słowo! Wpiszcie je tutaj przed kliknięciem startu:
+          Wpiszcie losowe słowo podane przez rodzinę na żywo:
         </p>
-        <input id="family-seed" type="text" placeholder="np. Pierogi-Karp-Sernik-2026" 
+        <input id="family-seed" type="text" placeholder="np. Mokry-Bandyta-Kevin-2026" 
           class="w-full px-4 py-2.5 rounded-xl bg-slate-900/80 border border-white/20 text-center text-white placeholder-slate-500 focus:outline-none focus:border-amber-400" />
       </div>
 
       <button onclick="startLotteryCeremony()" class="btn-glow bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold text-lg px-10 py-4 rounded-2xl shadow-xl transition transform hover:scale-105 cursor-pointer">
-        🔓 Odblokuj System i Rozpocznij Losowanie!
+        🔓 Odblokuj Mikołajowy Worek!
       </button>
     </div>
 
-    <!-- EKRAN 2: BUDOWANIE NAPIĘCIA (Animacja Mikołaja) -->
+    <!-- EKRAN 2: BUDOWANIE NAPIĘCIA -->
     <div id="screen-suspense" class="hidden glass rounded-3xl p-10 text-center">
-      <div class="text-7xl mb-6 animate-bounce">🎅🎁</div>
+      <div class="text-7xl mb-6 animate-bounce">🎅🕯️</div>
       <h2 id="suspense-text" class="christmas-font text-3xl md:text-4xl text-amber-300 mb-6 min-h-[3rem]">
-        Mikołaj zakłada okulary...
+        Mikołaj sprawdza listę...
       </h2>
       <div class="w-full max-w-md mx-auto bg-slate-800 rounded-full h-4 overflow-hidden border border-white/10">
         <div id="suspense-bar" class="bg-gradient-to-r from-red-500 via-amber-400 to-emerald-500 h-full w-0 transition-all duration-500"></div>
@@ -160,7 +184,7 @@
       <p id="seed-info" class="text-xs text-slate-400 mt-4 font-mono"></p>
     </div>
 
-    <!-- EKRAN 3: WYNIKI / TABLICA LOSOWANIA -->
+    <!-- EKRAN 3: WYNIKI -->
     <div id="screen-board" class="hidden glass rounded-3xl p-6 md:p-10">
       <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-white/10">
         <div>
@@ -172,12 +196,11 @@
         </div>
       </div>
 
-      <!-- Siatka uczestników -->
       <div id="participants-grid" class="grid sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8"></div>
 
       <div class="text-center border-t border-white/10 pt-6 flex flex-wrap justify-between items-center gap-4">
         <p class="text-xs text-slate-400">
-          ✅ Algorytm zweryfikował: 0 powtórzeń, 0 wylosowanych partnerów z pary, stosunek 1:1.
+          ✅ Anty-Szwagier zweryfikował: 0 powtórzeń, pełna uczciwość!
         </p>
         <button onclick="resetApp()" class="text-xs text-slate-400 hover:text-red-400 underline cursor-pointer">
           🔄 Zresetuj i wróć do ekranu blokady
@@ -186,72 +209,45 @@
     </div>
   </div>
 
-  <!-- MODAL 1: TAJNE ODKRYCIE WYNIKU (Odliczanie 3-2-1 + 5 sekund) -->
+  <!-- MODAL TAJNY -->
   <div id="secret-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
     <div class="glass rounded-3xl p-8 max-w-md w-full text-center border-2 border-amber-400/40">
       <div id="modal-step-confirm">
-        <div class="text-5xl mb-4">🕵️‍♂️</div>
+        <div class="text-5xl mb-4">🕵️‍♂️🕯️</div>
         <h3 class="text-2xl font-bold mb-2">Strefa Ściśle Tajna!</h3>
         <p class="text-slate-300 text-sm mb-6">
           Przy ekranie zostaje teraz TYLKO: <br>
           <span id="confirm-person-name" class="text-2xl font-bold text-amber-300 block mt-2"></span>
         </p>
         <p class="text-xs text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-6">
-          ⚠️ Uwaga: Wynik wyświetli się tylko na <b>5 sekund</b>, a następnie przycisk zablokuje się na zawsze! Reszta rodziny odwraca wzrok!
+          ⚠️ Wynik wyświetli się tylko na <b>5 sekund</b>, a potem zablokuje się na zawsze!
         </p>
         <div class="flex gap-3">
           <button onclick="closeSecretModal()" class="flex-1 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-sm font-semibold cursor-pointer">
             Anuluj
           </button>
           <button onclick="startSecretCountdown()" class="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm cursor-pointer">
-            Nikogo nie ma, pokazuj! 🎄
+            Pokazuj! 🎄
           </button>
         </div>
       </div>
 
       <div id="modal-step-countdown" class="hidden py-8">
-        <p class="text-sm uppercase tracking-widest text-slate-400 mb-2">Przygotuj się...</p>
+        <p class="text-sm uppercase tracking-widest text-slate-400 mb-2">Kevin liczy do trzech...</p>
         <div id="countdown-number" class="christmas-font text-8xl text-amber-300 animate-ping">3</div>
       </div>
 
       <div id="modal-step-reveal" class="hidden py-4">
-        <p class="text-xs uppercase tracking-widest text-emerald-400 font-bold mb-2">Robisz prezent świąteczny dla:</p>
+        <p class="text-xs uppercase tracking-widest text-emerald-400 font-bold mb-2">Robisz prezent dla:</p>
         <div id="revealed-target-name" class="christmas-font text-5xl md:text-6xl text-white bg-gradient-to-r from-red-600/40 to-amber-500/40 border border-amber-400/50 rounded-2xl py-6 px-4 my-4 shadow-inner">
         </div>
-        <p class="text-xs text-slate-300 mb-3">Zapamiętaj! Ten komunikat ulegnie samozniszczeniu za:</p>
+        <p class="text-xs text-slate-300 mb-3">Samozniszczenie za:</p>
         <div id="destroy-timer" class="text-2xl font-mono font-bold text-red-400">5.0 s</div>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 2: AUDYT UCZCIWOŚCI 1000X -->
-  <div id="audit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-    <div class="glass rounded-3xl p-6 md:p-8 max-w-2xl w-full border border-emerald-400/40 max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-bold text-emerald-300 flex items-center gap-2">
-          🛡️ Niezależny Audyt Algorytmu (1000 symulacji na żywo)
-        </h3>
-        <button onclick="closeAuditModal()" class="text-slate-400 hover:text-white text-xl cursor-pointer">✕</button>
-      </div>
-      <p class="text-xs text-slate-300 mb-4">
-        Poniższy test wykonuje właśnie teraz 1000 pełnych losowań pod rząd, używając generatora liczb losowych przeglądarki, i sprawdza, czy kiedykolwiek złamano zasady.
-      </p>
-      <div id="audit-results" class="space-y-3 text-sm font-mono bg-slate-950/80 p-4 rounded-2xl border border-white/10 mb-6"></div>
-      <div class="flex justify-end gap-3">
-        <button onclick="runAuditSimulation()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold cursor-pointer">
-          🔄 Powtórz test 1000x
-        </button>
-        <button onclick="closeAuditModal()" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold cursor-pointer">
-          Zamknij
-        </button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    // ==========================================
-    // 1. DANE UCZESTNIKÓW I KONFIGURACJA PAR
-    // ==========================================
     const PARTICIPANTS_CONFIG = [
       { id: 'A', letter: 'Osoba A', name: 'Michał',  group: 1, pairLabel: 'Grupa 1' },
       { id: 'B', letter: 'Osoba B', name: 'Paula',   group: 1, pairLabel: 'Grupa 1' },
@@ -310,9 +306,6 @@
       }).join('');
     }
 
-    // ==========================================
-    // 2. KRYPTOGRAFICZNY ALGORYTM MIKOŁAJA
-    // ==========================================
     function cryptoRandomInt(max) {
       if (window.crypto && window.crypto.getRandomValues) {
         const array = new Uint32Array(1);
@@ -336,17 +329,12 @@
       while (true) {
         const receivers = shuffleCrypto(PARTICIPANTS_CONFIG);
         let isValid = true;
-
         for (let i = 0; i < givers.length; i++) {
-          const giver = givers[i];
-          const receiver = receivers[i];
-
-          if (giver.id === receiver.id || giver.group === receiver.group) {
+          if (givers[i].id === receivers[i].id || givers[i].group === receivers[i].group) {
             isValid = false;
             break;
           }
         }
-
         if (isValid) {
           const result = {};
           for (let i = 0; i < givers.length; i++) {
@@ -357,11 +345,8 @@
       }
     }
 
-    // ==========================================
-    // 3. CEREMONIA LOSOWANIA I BUDOWANIE NAPIĘCIA
-    // ==========================================
     function startLotteryCeremony() {
-      const seedInput = document.getElementById('family-seed').value.trim() || 'Magia-Swiat-2026';
+      const seedInput = document.getElementById('family-seed').value.trim() || 'Kevin-Sam-W-Domu';
       const timestamp = new Date().toLocaleTimeString('pl-PL') + '.' + new Date().getMilliseconds();
 
       currentAssignments = generateValidSantaDraw();
@@ -370,13 +355,13 @@
 
       document.getElementById('screen-lock').classList.add('hidden');
       document.getElementById('screen-suspense').classList.remove('hidden');
-      document.getElementById('seed-info').innerText = `Ziarno losowości: "${seedInput}" \vert{} Czas: ${timestamp}`;
+      document.getElementById('seed-info').innerText = `Hasło Anty-Szwagier: "${seedInput}" | Czas: ${timestamp}`;
 
       const funnyMessages = [
-        "🎅 Mikołaj drapie się po brodzie i sprawdza listę grzecznych...",
-        "🦌 Rudolf tasuje koperty w worku...",
-        "🚫 Odfiltrowuję pary, żeby nikt nie kupił skarpetek swojemu partnerowi...",
-        "🍪 Mikołaj dopija ciepłe mleko i pieczętuje wyniki..."
+        "🎅 Mikołaj zakłada czapkę i odpala piec w remizie...",
+        "🕯️ Zapalamy świeczki i sprawdzamy, czy szwagier nie próbuje oszukać...",
+        "🪤 Kevin zastawia pułapki na korytarzu...",
+        "🍪 Mikołaj parzy gorącą herbatę i pieczętuje bezpieczny układ..."
       ];
 
       let step = 0;
@@ -400,12 +385,10 @@
     function showResultsBoard(seedInput, timestamp) {
       document.getElementById('screen-suspense').classList.add('hidden');
       document.getElementById('screen-board').classList.remove('hidden');
-
-      document.getElementById('hash-badge').innerText = `🔐 Sesja: ${seedInput.slice(0, 18)} (${timestamp})`;
+      document.getElementById('hash-badge').innerText = `🔐 Sesja Anty-Szwagier: ${seedInput.slice(0, 15)}`;
       document.getElementById('board-subtitle').innerText = privacyMode === 'secret'
-        ? 'TRYB TAJNY: Każda osoba podchodzi pojedynczo, klika swoje imię i ma 5 sekund na zapamiętanie wyniku!'
-        : 'TRYB JAWNY: Wszystkie wylosowane pary prezentowe są widoczne poniżej.';
-
+        ? 'TRYB TAJNY: Każda osoba podchodzi, klika przycisk i ma 5 sekund na zapamiętanie!'
+        : 'TRYB JAWNY: Wszystkie pary widoczne na stole.';
       renderParticipantsGrid();
     }
 
@@ -419,9 +402,9 @@
         if (privacyMode === 'public') {
           return `
             <div class="glass-card p-5 rounded-2xl border border-amber-400/30 text-center">
-              <div class="text-xs text-slate-400 mb-1">${person.pairLabel}</div>
+              <div class="text-xs text-slate-300 mb-1">${person.pairLabel}</div>
               <div class="text-lg font-bold text-white mb-2">${getDisplayName(person)}</div>
-              <div class="text-xs text-amber-300 uppercase tracking-wider mb-1">kupuje prezent dla 👇</div>
+              <div class="text-xs text-amber-300 uppercase tracking-wider mb-1">kupuje dla 👇</div>
               <div class="mt-2 py-2 px-3 rounded-xl bg-emerald-600/30 border border-emerald-400/40 font-bold text-emerald-200 text-lg">
                 🎁 ${getDisplayName(targetObj)}
               </div>
@@ -435,10 +418,200 @@
               <div class="text-3xl mb-2">🔒</div>
               <div class="text-lg font-bold text-slate-300">${getDisplayName(person)}</div>
               <div class="text-xs text-emerald-400 font-semibold mt-3 py-2 rounded-xl bg-emerald-950/60 border border-emerald-500/20">
-                ✅ Wylosowano i ukryto
+                ✅ Wylosowane
               </div>
             </div>
           `;
         } else {
           return `
-            <div class="glass-card p-5 rounded
+            <div class="glass-card p-5 rounded-2xl border border-white/20 text-center flex flex-col justify-between">
+              <div>
+                <div class="text-xs text-amber-300 font-semibold mb-1">${person.pairLabel}</div>
+                <div class="text-xl font-bold text-white mb-4">${getDisplayName(person)}</div>
+              </div>
+              <button onclick="openSecretModal('${person.id}')" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-bold text-sm shadow-lg transition cursor-pointer">
+                🎁 Zobacz swój wynik
+              </button>
+            </div>
+          `;
+        }
+      }).join('');
+    }
+
+    let secretTimerInterval = null;
+
+    function openSecretModal(personId) {
+      activePersonId = personId;
+      const personObj = PARTICIPANTS_CONFIG.find(p => p.id === personId);
+      document.getElementById('confirm-person-name').innerText = getDisplayName(personObj);
+      document.getElementById('modal-step-confirm').classList.remove('hidden');
+      document.getElementById('modal-step-countdown').classList.add('hidden');
+      document.getElementById('modal-step-reveal').classList.add('hidden');
+      document.getElementById('secret-modal').classList.remove('hidden');
+    }
+
+    function closeSecretModal() {
+      clearInterval(secretTimerInterval);
+      document.getElementById('secret-modal').classList.add('hidden');
+      renderParticipantsGrid();
+    }
+
+    function startSecretCountdown() {
+      document.getElementById('modal-step-confirm').classList.add('hidden');
+      document.getElementById('modal-step-countdown').classList.remove('hidden');
+      let count = 3;
+      const countEl = document.getElementById('countdown-number');
+      countEl.innerText = count;
+      playBeep(523.25, 0.15);
+
+      const countInterval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countEl.innerText = count;
+          playBeep(523.25, 0.15);
+        } else {
+          clearInterval(countInterval);
+          revealSecretTarget();
+        }
+      }, 850);
+    }
+
+    function revealSecretTarget() {
+      playBeep(783.99, 0.35);
+      document.getElementById('modal-step-countdown').classList.add('hidden');
+      document.getElementById('modal-step-reveal').classList.remove('hidden');
+
+      const targetId = currentAssignments[activePersonId];
+      const targetObj = PARTICIPANTS_CONFIG.find(p => p.id === targetId);
+
+      document.getElementById('revealed-target-name').innerText = `🎁 ${getDisplayName(targetObj)}`;
+      revealedStatus[activePersonId] = true;
+
+      let timeLeft = 5.0;
+      const timerEl = document.getElementById('destroy-timer');
+
+      secretTimerInterval = setInterval(() => {
+        timeLeft -= 0.1;
+        if (timeLeft > 0) {
+          timerEl.innerText = `${timeLeft.toFixed(1)} s`;
+        } else {
+          clearInterval(secretTimerInterval);
+          closeSecretModal();
+        }
+      }, 100);
+    }
+
+    function resetApp() {
+      if (confirm('Czy na pewno chcesz zresetować losowanie?')) {
+        document.getElementById('screen-board').classList.add('hidden');
+        document.getElementById('screen-lock').classList.remove('hidden');
+      }
+    }
+
+    function downloadSelfAsHtml() {
+      const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'index.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // ANGIELSKI HIT ŚWIĄTECZNY (Last Christmas / Wham! - motyw przewodni)
+    let audioCtx = null;
+    let isMusicPlaying = false;
+    let musicTimeout = null;
+
+    function playBeep(freq, duration) {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    const LAST_CHRISTMAS_NOTES = [
+      [440.00, 300], [392.00, 300], [329.63, 600],
+      [329.63, 300], [349.23, 300], [392.00, 600],
+      [392.00, 300], [349.23, 300], [329.63, 600],
+      [293.66, 400], [329.63, 400], [440.00, 800]
+    ];
+
+    function playMelodyLoop(index = 0) {
+      if (!isMusicPlaying) return;
+      const [freq, dur] = LAST_CHRISTMAS_NOTES[index];
+      playBeep(freq, dur / 1000);
+      musicTimeout = setTimeout(() => {
+        playMelodyLoop((index + 1) % LAST_CHRISTMAS_NOTES.length);
+      }, dur + 60);
+    }
+
+    function toggleMusic() {
+      isMusicPlaying = !isMusicPlaying;
+      document.getElementById('music-icon').innerText = isMusicPlaying ? '🎷' : '🔇';
+      document.getElementById('music-text').innerText = isMusicPlaying ? 'Hit Świąteczny: WŁ' : 'Muzyka: WYŁ';
+      if (isMusicPlaying) {
+        playMelodyLoop(0);
+      } else {
+        clearTimeout(musicTimeout);
+      }
+    }
+
+    const canvas = document.getElementById('snow-canvas');
+    const ctx = canvas.getContext('2d');
+    let flakes = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    for (let i = 0; i < 110; i++) {
+      flakes.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 3.5 + 1,
+        d: Math.random() * 1.2 + 0.6
+      });
+    }
+
+    function drawSnow() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.beginPath();
+      for (let i = 0; i < flakes.length; i++) {
+        const f = flakes[i];
+        ctx.moveTo(f.x, f.y);
+        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
+      }
+      ctx.fill();
+      for (let i = 0; i < flakes.length; i++) {
+        const f = flakes[i];
+        f.y += f.d;
+        f.x += Math.sin(f.y * 0.015) * 0.5;
+        if (f.y > canvas.height) {
+          flakes[i] = { x: Math.random() * canvas.width, y: 0, r: f.r, d: f.d };
+        }
+      }
+      requestAnimationFrame(drawSnow);
+    }
+
+    renderPairsPreview();
+    drawSnow();
+  </script>
+</body>
+</html>
